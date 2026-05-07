@@ -47,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
         }
         Item item = itemRepository.findItemById(itemId)
                 .orElseThrow(() -> {
-                    log.warn("Вещь с id #{} не найдена", itemId);
+                    log.error("Вещь с id #{} не найдена", itemId);
                     return new NotFoundException("Вещь с таким id не найдена");
                 });
         log.debug("Вещь с id #{} найдена", itemId);
@@ -57,9 +57,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Collection<ItemDto> search(Long userId, String text) {
         log.debug("Поиск вещи по названию '{}'", text);
-        if (userRepository.findUserById(userId).isEmpty()) {
-            throw new NotFoundException("Пользователь с таким id не найден");
-        }
+    
+        userRepository.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с таким id не найден"));
 
         if (text == null || text.isBlank()) {
             log.debug("Текстовый запрос пуст");
@@ -68,18 +68,15 @@ public class ItemServiceImpl implements ItemService {
 
         Collection<ItemDto> itemsByText = itemRepository.findAll()
                 .stream()
-                .filter(item -> item.getAvailable().equals(Boolean.TRUE))
-                .filter(item -> item.getOwner() != null
-                                    && item.getOwner().getId().equals(userId))
+                .filter(item -> item.getAvailable().equals(Boolean.TRUE)) // Только доступные вещи
                 .filter(item -> (item.getName() != null
-                                    && item.getName().toLowerCase().contains(text.toLowerCase()))
-                                    || (item.getDescription() != null
-                                    && item.getDescription().toLowerCase().contains(text.toLowerCase())))
+                        && item.getName().toLowerCase().contains(text.toLowerCase()))
+                        || (item.getDescription() != null
+                        && item.getDescription().toLowerCase().contains(text.toLowerCase())))
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
 
-        log.debug("Вещи по текстовому запросу '{}' найдены", text);
-
+        log.debug("Найдено {} вещей по текстовому запросу '{}'", itemsByText.size(), text);
         return itemsByText;
     }
 
@@ -131,14 +128,14 @@ public class ItemServiceImpl implements ItemService {
     public void deleteItemById(Long userId, Long itemId) {
         log.debug("Удаление вещи с id = {} у пользователя с id = {}", itemId, userId);
 
-        if (userRepository.findUserById(userId).isEmpty()) {
-            throw new NotFoundException("Пользователь с таким id не найден");
-        }
+        userRepository.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с таким id не найден"));
 
-        if (itemRepository.findItemById(itemId).isEmpty()) {
-            log.warn("Попытка удаления несуществующей вещи с id={}", itemId);
-            throw new NotFoundException("Вещь с id = " + itemId + " не найдена");
-        }
+        Item item = itemRepository.findItemById(itemId)
+                .orElseThrow(() -> {
+                    log.error("Попытка удаления несуществующей вещи с id={}", itemId);
+                    return new NotFoundException("Вещь с id = " + itemId + " не найдена");
+                });
 
         itemRepository.delete(itemId);
         log.info("Вещь с id={} успешно удалена", itemId);

@@ -57,7 +57,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Collection<ItemDto> search(Long userId, String text) {
         log.debug("Поиск вещи по названию '{}'", text);
-    
+
         userRepository.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с таким id не найден"));
 

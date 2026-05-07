@@ -7,17 +7,18 @@ import java.util.*;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
+
     private final Map<Long, User> users = new HashMap<>();
     private long nextId = 1;
 
     @Override
-    public Optional<User> findUserById(Long userId) {
-        return Optional.ofNullable(users.get(userId));
+    public Collection<User> findAll() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public Collection<User> findAll() {
-        return users.values();
+    public Optional<User> findUserById(Long userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
@@ -30,7 +31,14 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public void delete(Long userId) {
-        users.remove(userId);
+    public Optional<User> findByEmail(String email) {
+        return users.values().stream()
+                .filter(user -> user.getEmail() != null && user.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public void delete(Long id) {
+        users.remove(id);
     }
 }

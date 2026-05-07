@@ -3,51 +3,34 @@ package ru.practicum.shareit.user.repository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
-
-    private final List<User> users = new ArrayList<>();
+    private final Map<Long, User> users = new HashMap<>();
     private long nextId = 1;
 
     @Override
-    public Collection<User> findAll() {
-        return List.copyOf(users);
+    public Optional<User> findUserById(Long userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
-    public Optional<User> findUserById(Long userId) {
-        return users.stream()
-                .filter(user -> user.getId() != null
-                                   && user.getId().equals(userId))
-                .findFirst();
+    public Collection<User> findAll() {
+        return users.values();
     }
 
     @Override
     public User save(User user) {
         if (user.getId() == null) {
             user.setId(nextId++);
-        } else {
-            users.removeIf(existing -> existing.getId().equals(user.getId()));
         }
-
-        users.add(user);
+        users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return users.stream()
-                .filter(user -> user.getEmail() != null && user.getEmail().equals(email))
-                .findFirst();
-    }
-
-    @Override
-    public void delete(Long id) {
-        users.removeIf(user -> user.getId() != null && user.getId().equals(id));
+    public void delete(Long userId) {
+        users.remove(userId);
     }
 }

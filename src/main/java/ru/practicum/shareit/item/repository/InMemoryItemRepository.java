@@ -1,36 +1,17 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.Comment;
 
-import java.util.*;
+import java.util.List;
 
 @Repository
-public class InMemoryItemRepository implements ItemRepository {
-    private final Map<Long, Item> items = new HashMap<>();
-    private long nextId = 1;
+public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Override
-    public Collection<Item> findAll() {
-        return items.values();
-    }
+    List<Comment> findByItemIdOrderByCreatedDesc(Long itemId);
 
-    @Override
-    public Optional<Item> findItemById(Long itemId) {
-        return Optional.ofNullable(items.get(itemId));
-    }
-
-    @Override
-    public Item save(Item item) {
-        if (item.getId() == null) {
-            item.setId(nextId++);
-        }
-        items.put(item.getId(), item);
-        return item;
-    }
-
-    @Override
-    public void delete(Long itemId) {
-        items.remove(itemId);
-    }
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.booker.id = :userId AND b.item.id = :itemId AND b.status = 'APPROVED' AND b.end < :now")
+    boolean hasApprovedPastBooking(Long userId, Long itemId, java.time.LocalDateTime now);
 }

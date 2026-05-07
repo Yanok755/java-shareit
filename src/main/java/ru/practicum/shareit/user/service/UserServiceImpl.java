@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> alreadyExistsUser = repository.findByEmail(userDto.getEmail());
 
         if (alreadyExistsUser.isPresent()) {
-            log.warn("email {} уже используется, добавление пользователя невозможно", userDto.getEmail());
+            log.error("email {} уже используется, добавление пользователя невозможно", userDto.getEmail());
             throw new DuplicatedDataException("Данный email уже используется");
         }
 
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Отправляем запрос на обновление пользователя с ID {}", id);
         User existingUser = repository.findUserById(id)
                 .orElseThrow(() -> {
-                    log.warn("Пользователь с id #{} не найден", id);
+                    log.error("Пользователь с id #{} не найден", id);
                     return new NotFoundException("Пользователь не найден");
                 });
 
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
             Optional<User> emailOwner = repository.findByEmail(newUserDto.getEmail());
 
             if (emailOwner.isPresent() && emailOwner.get().getEmail().equals(newUserDto.getEmail())) {
-                log.warn("email '{}' пользователя уже используется другим пользователем", newUserDto.getEmail());
+                log.error("email '{}' пользователя уже используется другим пользователем", newUserDto.getEmail());
                 throw new DuplicatedDataException("Данный email уже используется");
             }
         }
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Удаление пользователя с id={}", id);
 
         if (repository.findUserById(id).isEmpty()) {
-            log.warn("Попытка удаления несуществующего пользователя с id={}", id);
+            log.error("Попытка удаления несуществующего пользователя с id={}", id);
             throw new NotFoundException("Пользователь с id = " + id + " не найден");
         }
 

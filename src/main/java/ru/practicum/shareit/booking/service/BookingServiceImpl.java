@@ -67,7 +67,7 @@ public class BookingServiceImpl implements BookingService {
         bookingValidator.validateUpdateStatus(booking, ownerId);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return bookingMapper.toBookingResponseDto(bookingRepository.save(booking));
+        return bookingMapper.toBookingResponseDto(booking);
     }
 
     @Override

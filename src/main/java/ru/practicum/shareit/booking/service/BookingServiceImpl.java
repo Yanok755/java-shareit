@@ -92,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = bookingRepository.findByBookerIdAndState(bookerId, state, now);
-        return BookingMapper.toResponseDtoList(bookings);
+        return bookingMapper.toResponseDtoList(bookings);
     }
 
     @Override
@@ -106,6 +106,6 @@ public class BookingServiceImpl implements BookingService {
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = bookingRepository.findByOwnerIdAndState(ownerId, state, now);
-        return BookingMapper.toResponseDtoList(bookings);
+        return bookingMapper.toResponseDtoList(bookings);
     }
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class ValidationUtils {
+public class EntityUtils {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 

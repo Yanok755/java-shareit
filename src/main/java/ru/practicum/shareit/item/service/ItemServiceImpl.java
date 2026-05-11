@@ -36,14 +36,14 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
-    private final ValidationUtils validationUtils;
+    private final EntityUtils entityUtils;
 
     @Override
     @Transactional(readOnly = true)
     public List<ItemDto> getAllItems(Long userId) {
         log.debug("Запрошен список всех предметов пользователя {}", userId);
 
-        validationUtils.getExistingUser(userId);
+        entityUtils.getExistingUser(userId);
 
         List<Item> items = itemRepository.findByOwnerId(userId);
         LocalDateTime now = LocalDateTime.now();
@@ -63,7 +63,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItemById(Long itemId) {
         log.debug("Отправляем запрос на получение вещи по ID {}", itemId);
 
-        Item item = validationUtils.getExistingItem(itemId);
+        Item item = entityUtils.getExistingItem(itemId);
 
         ItemDto dto = ItemMapper.toItemDto(item);
         List<CommentDto> comments = commentRepository
@@ -94,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Запрос на добавление новой вещи {} пользователем с id = {}",
                 newItemDto.getName(), userId);
 
-        User owner = validationUtils.getExistingUser(userId);
+        User owner = entityUtils.getExistingUser(userId);
 
         Item item = ItemMapper.toItem(newItemDto);
         item.setOwner(owner);
@@ -109,8 +109,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto updateItem(Long userId, Long itemId, ItemUpdateDto newItemDto) {
         log.debug("Запрос на обновление вещи с ID {}", itemId);
 
-        validationUtils.getExistingUser(userId);
-        Item item = validationUtils.getExistingItem(itemId);
+        entityUtils.getExistingUser(userId);
+        Item item = entityUtils.getExistingItem(itemId);
 
         if (!item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Вещь с id=" + itemId + " не принадлежит пользователю");
@@ -136,8 +136,8 @@ public class ItemServiceImpl implements ItemService {
     public void deleteItemById(Long userId, Long itemId) {
         log.debug("Удаление вещи с id = {} у пользователя с id = {}", itemId, userId);
 
-        validationUtils.getExistingUser(userId);
-        Item item = validationUtils.getExistingItem(itemId);
+        entityUtils.getExistingUser(userId);
+        Item item = entityUtils.getExistingItem(itemId);
 
         if (!item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Вещь с id=" + itemId + " не принадлежит пользователю");
@@ -153,8 +153,8 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Добавление комментария к вещи {}: userId={}, text={}",
                 itemId, userId, commentDto.getText());
 
-        User author = validationUtils.getExistingUser(userId);
-        Item item = validationUtils.getExistingItem(itemId);
+        User author = entityUtils.getExistingUser(userId);
+        Item item = entityUtils.getExistingItem(itemId);
 
         boolean hasCompletedBooking = bookingRepository.existsByBookerIdAndItemIdAndEndBeforeAndStatus(
                 userId, itemId, LocalDateTime.now(), BookingStatus.APPROVED);
@@ -174,7 +174,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByItemId(Long itemId) {
-        validationUtils.getExistingItem(itemId); // проверка существования вещи
+        entityUtils.getExistingItem(itemId); // проверка существования вещи
 
         return commentRepository.findByItemIdOrderByCreatedDesc(itemId)
                 .stream()

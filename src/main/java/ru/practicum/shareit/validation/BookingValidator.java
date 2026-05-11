@@ -13,12 +13,12 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 @Component
 @RequiredArgsConstructor
 public class BookingValidator {
-    private final ValidationUtils validationUtils;
+    private final EntityUtils entityUtils;
     private final ItemRepository itemRepository;
 
     public void validateCreateBooking(Long bookerId, BookingCreateDto dto) {
-        validationUtils.getExistingUser(bookerId);
-        Item item = validationUtils.getExistingItem(dto.getItemId());
+        entityUtils.getExistingUser(bookerId);
+        Item item = entityUtils.getExistingItem(dto.getItemId());
 
         if (item.getOwner().getId().equals(bookerId)) {
             throw new ValidationException("Нельзя забронировать свою вещь");
@@ -27,12 +27,12 @@ public class BookingValidator {
             throw new ValidationException("Вещь недоступна для бронирования");
         }
 
-        validationUtils.checkDateRange(dto.getStart(), dto.getEnd());
-        validationUtils.checkNotInPast(dto.getStart());
+        entityUtils.checkDateRange(dto.getStart(), dto.getEnd());
+        entityUtils.checkNotInPast(dto.getStart());
     }
 
     public void validateUpdateStatus(Booking booking, Long ownerId) {
-        validationUtils.checkOwnerAccess(booking.getItem(), ownerId);
+        entityUtils.checkOwnerAccess(booking.getItem(), ownerId);
 
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Статус можно изменить только для бронирований в статусе WAITING");

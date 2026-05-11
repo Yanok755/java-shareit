@@ -63,11 +63,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItemById(Long itemId) {
         log.debug("Отправляем запрос на получение вещи по ID {}", itemId);
 
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> {
-                    log.warn("Вещь с id #{} не найдена", itemId);
-                    return new NotFoundException("Вещь с таким id не найдена");
-                });
+        Item item = validationUtils.getExistingItem(itemId);
 
         ItemDto dto = ItemMapper.toItemDto(item);
         List<CommentDto> comments = commentRepository

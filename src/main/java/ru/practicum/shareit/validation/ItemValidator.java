@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 public class ItemValidator {
-    private final ValidationUtils validationUtils;
+    private final EntityUtils entityUtils;
     private final BookingRepository bookingRepository;
 
     public void validateItemAccess(Item item, Long userId) {
-        validationUtils.checkOwnerAccess(item, userId);
+        entityUtils.checkOwnerAccess(item, userId);
     }
 
     public void validateCommentCreation(Long userId, Long itemId) {
-        validationUtils.getExistingUser(userId);
-        validationUtils.getExistingItem(itemId);
+        entityUtils.getExistingUser(userId);
+        entityUtils.getExistingItem(itemId);
 
         boolean hasBooking = bookingRepository.hasApprovedPastBooking(userId, itemId, LocalDateTime.now());
         if (!hasBooking) {

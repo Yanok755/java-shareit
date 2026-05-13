@@ -10,7 +10,7 @@ import ru.practicum.shareit.client.ItemRequestClient;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/requests")
 public class ItemRequestController {

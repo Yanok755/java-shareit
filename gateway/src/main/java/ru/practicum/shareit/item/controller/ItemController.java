@@ -14,7 +14,7 @@ import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import java.util.Collection;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/items")
 public class ItemController {

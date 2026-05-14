@@ -28,7 +28,7 @@ public class BookingValidator {
         }
 
         validationUtils.checkDateRange(dto.getStart(), dto.getEnd());
-        validationUtils.checkNotInPast(dto.getStart());
+        //validationUtils.checkNotInPast(dto.getStart());
     }
 
     public void validateUpdateStatus(Booking booking, Long ownerId) {

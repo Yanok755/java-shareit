@@ -38,9 +38,15 @@ public class ErrorHandler {
         return Map.of("error", message);
     }
 
-    @ExceptionHandler({ValidationException.class, IllegalArgumentException.class})
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleBadRequest(RuntimeException e) {
+    public Map<String, String> handleValidation(ValidationException e) {
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleIllegalArgument(IllegalArgumentException e) {
         return Map.of("error", e.getMessage());
     }
 }

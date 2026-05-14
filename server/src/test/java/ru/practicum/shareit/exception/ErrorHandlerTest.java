@@ -68,4 +68,11 @@ public class ErrorHandlerTest {
         Map<String, String> result = errorHandler.handleValidation(ex);
         assertEquals("Invalid date range", result.get("error"));
     }
+
+    @Test
+    public void handleValidation_IllegalArgumentException_ReturnsCorrectMap() {
+        IllegalArgumentException ex = new IllegalArgumentException("Illegal argument");
+        Map<String, String> result = errorHandler.handleBadRequest(ex); // или handleValidation, в зависимости от вашей реализации
+        assertEquals("Illegal argument", result.get("error"));
+    }
 }

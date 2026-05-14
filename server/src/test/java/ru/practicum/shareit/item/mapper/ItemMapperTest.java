@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +17,10 @@ public class ItemMapperTest {
         item.setName("Дрель");
         item.setDescription("Профессиональная");
         item.setAvailable(true);
-        item.setRequestId(5L);
+
+        ItemRequest request = new ItemRequest();
+        request.setId(5L);
+        item.setRequest(request);
 
         ItemDto dto = ItemMapper.toItemDto(item);
 
@@ -25,7 +29,21 @@ public class ItemMapperTest {
         assertEquals("Профессиональная", dto.getDescription());
         assertTrue(dto.getAvailable());
         assertEquals(5L, dto.getRequestId());
-        assertNull(dto.getLastBooking()); // не маппится в toItemDto
+        assertNull(dto.getLastBooking());
+    }
+
+    @Test
+    public void toItemDto_WhenRequestIsNull_ShouldSetRequestIdNull() {
+        Item item = new Item();
+        item.setId(10L);
+        item.setName("Дрель");
+        item.setDescription("Профессиональная");
+        item.setAvailable(true);
+        item.setRequest(null);
+
+        ItemDto dto = ItemMapper.toItemDto(item);
+
+        assertNull(dto.getRequestId());
     }
 
     @Test
@@ -38,7 +56,7 @@ public class ItemMapperTest {
         assertEquals("Дрель", item.getName());
         assertEquals("Описание", item.getDescription());
         assertFalse(item.getAvailable());
-        assertEquals(5L, item.getRequestId());
+        assertNull(item.getRequest());
     }
 
     @Test

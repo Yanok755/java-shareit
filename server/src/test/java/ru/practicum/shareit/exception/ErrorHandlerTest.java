@@ -63,9 +63,16 @@ public class ErrorHandlerTest {
     }
 
     @Test
-    public void handleValidation_ValidationException_ReturnsCorrectMap() {
+    public void handleBadRequest_ValidationException_ReturnsCorrectMap() {
         ValidationException ex = new ValidationException("Invalid date range");
-        Map<String, String> result = errorHandler.handleValidation(ex);
+        Map<String, String> result = errorHandler.handleBadRequest(ex);
         assertEquals("Invalid date range", result.get("error"));
+    }
+
+    @Test
+    public void handleBadRequest_IllegalArgumentException_ReturnsCorrectMap() {
+        IllegalArgumentException ex = new IllegalArgumentException("Illegal argument");
+        Map<String, String> result = errorHandler.handleBadRequest(ex);
+        assertEquals("Illegal argument", result.get("error"));
     }
 }

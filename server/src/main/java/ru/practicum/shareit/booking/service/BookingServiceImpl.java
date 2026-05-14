@@ -35,8 +35,6 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingValidator bookingValidator;
-    private final BookingMapper bookingMapper;
-
 
     @Override
     @Transactional
@@ -50,14 +48,14 @@ public class BookingServiceImpl implements BookingService {
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + bookerId + " не найден"));
 
-        Booking booking = bookingMapper.toBooking(dto);
+        Booking booking = BookingMapper.toBooking(dto);
         booking.setItem(item);
         booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
 
         Booking saved = bookingRepository.save(booking);
         log.info("Бронирование создано: id={}", saved.getId());
-        return bookingMapper.toBookingResponseDto(saved);
+        return BookingMapper.toBookingResponseDto(saved);
     }
 
     @Override
@@ -71,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
         bookingValidator.validateUpdateStatus(booking, ownerId);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return bookingMapper.toBookingResponseDto(bookingRepository.save(booking));
+        return BookingMapper.toBookingResponseDto(bookingRepository.save(booking));
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class BookingMapper {
-    
+
     public static Booking toBooking(BookingCreateDto dto) {
         Booking booking = new Booking();
         booking.setStart(dto.getStart());

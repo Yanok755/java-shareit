@@ -19,7 +19,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -68,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> {
-                    log.error("Вещь с id #{} не найдена", itemId);
+                    log.warn("Вещь с id #{} не найдена", itemId);
                     return new NotFoundException("Вещь с таким id не найдена");
                 });
 
@@ -103,17 +102,18 @@ public class ItemServiceImpl implements ItemService {
 
         User owner = validationUtils.getExistingUser(userId);
 
+        if (newItemDto.getRequestId() != null) {
+            requestRepository.findById(newItemDto.getRequestId())
+                    .orElseThrow(() -> {
+                        log.warn("Запрос с id #{} не найден", newItemDto.getRequestId());
+                        return new NotFoundException("Запрос с таким id не найден");
+                    });
+        }
+
         Item item = ItemMapper.toItem(newItemDto);
         item.setOwner(owner);
 
-        if (newItemDto.getRequestId() != null) {
-            ItemRequest request = requestRepository.findById(newItemDto.getRequestId())
-                    .orElseThrow(() -> {
-                        log.error("Запрос с id #{} не найден", newItemDto.getRequestId());
-                        return new NotFoundException("Запрос с таким id не найден");
-                    });
-            item.setRequest(request);
-        }
+        item.setRequestId(newItemDto.getRequestId());
 
         Item saved = itemRepository.save(item);
         log.debug("Вещь с id {} успешно добавлена", saved.getId());
@@ -190,7 +190,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentDto> getComments(Long itemId) {
-        validationUtils.getExistingItem(itemId);
+        validationUtils.getExistingItem(itemId); // проверка существования вещи
 
         return commentRepository.findByItemIdOrderByCreatedDesc(itemId)
                 .stream()

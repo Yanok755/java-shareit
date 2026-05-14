@@ -3,13 +3,16 @@ package ru.practicum.shareit.request.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = "requestor")
+@ToString(exclude = {"requestor", "items"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "item_requests")
@@ -29,6 +32,9 @@ public class ItemRequest {
 
     @Column(nullable = false)
     private LocalDateTime created;
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Item> items = new ArrayList<>();
 
     @PrePersist
     private void onCreate() {

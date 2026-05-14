@@ -7,7 +7,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class BookingMapper {
     public static Booking toBooking(BookingCreateDto dto) {
         Booking booking = new Booking();

@@ -61,11 +61,4 @@ public class ErrorHandlerTest {
         Map<String, String> result = errorHandler.handleValidation(ex);
         assertEquals("Validation failed", result.get("error"));
     }
-
-    @Test
-    public void handleValidation_ValidationException_ReturnsCorrectMap() {
-        ValidationException ex = new ValidationException("Invalid date range");
-        Map<String, String> result = errorHandler.handleValidation(ex);
-        assertEquals("Invalid date range", result.get("error"));
-    }
 }

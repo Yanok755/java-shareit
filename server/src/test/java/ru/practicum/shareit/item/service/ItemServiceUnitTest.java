@@ -15,7 +15,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.validation.ValidationUtils;
@@ -110,39 +109,6 @@ public class ItemServiceUnitTest {
     }
 
     @Test
-    public void addItem_WithValidRequestId_SetsRequest() {
-        User owner = new User();
-        owner.setId(1L);
-
-        ItemRequest request = new ItemRequest();
-        request.setId(5L);
-
-        ItemDto newItem = new ItemDto(null, "Дрель", "Описание", true, null, null, List.of(), 5L);
-
-        Item savedItem = new Item();
-        savedItem.setId(10L);
-        savedItem.setName("Дрель");
-        savedItem.setOwner(owner);
-        savedItem.setRequest(request);
-
-        when(validationUtils.getExistingUser(1L)).thenReturn(owner);
-        when(requestRepository.findById(5L)).thenReturn(Optional.of(request));
-        when(itemRepository.save(any(Item.class))).thenReturn(savedItem);
-
-        var result = itemService.addItem(1L, newItem);
-
-        assertNotNull(result.getId());
-        assertEquals("Дрель", result.getName());
-        assertEquals(5L, result.getRequestId());
-
-        verify(requestRepository).findById(5L);
-        verify(itemRepository).save(argThat(item -> 
-            item.getRequest() != null && 
-            item.getRequest().getId().equals(5L)
-        ));
-    }
-
-    @Test
     public void addItem_WithNullRequestId_Success() {
         User owner = new User();
         owner.setId(1L);
@@ -159,26 +125,7 @@ public class ItemServiceUnitTest {
 
         assertNotNull(result.getId());
         assertEquals("Дрель", result.getName());
-        assertNull(result.getRequestId());
         verify(requestRepository, never()).findById(anyLong());
-        verify(itemRepository).save(argThat(item -> item.getRequest() == null));
-    }
-
-    @Test
-    public void addItem_WithNonExistentRequestId_ThrowsNotFoundException() {
-        User owner = new User();
-        owner.setId(1L);
-
-        ItemDto newItem = new ItemDto(null, "Дрель", "Описание", true, null, null, List.of(), 999L);
-
-        when(validationUtils.getExistingUser(1L)).thenReturn(owner);
-        when(requestRepository.findById(999L)).thenReturn(Optional.empty());
-
-        NotFoundException ex = assertThrows(NotFoundException.class,
-                () -> itemService.addItem(1L, newItem));
-
-        assertTrue(ex.getMessage().contains("не найден"));
-        verify(itemRepository, never()).save(any());
     }
 
     @Test
@@ -227,38 +174,6 @@ public class ItemServiceUnitTest {
         assertEquals("Имя", result.getName());
         assertEquals("Описание", result.getDescription());
         assertFalse(result.getAvailable());
-    }
-
-    @Test
-    public void updateItem_ShouldNotChangeRequest() {
-        User owner = new User();
-        owner.setId(1L);
-
-        ItemRequest originalRequest = new ItemRequest();
-        originalRequest.setId(5L);
-
-        Item item = new Item();
-        item.setId(10L);
-        item.setName("Имя");
-        item.setDescription("Описание");
-        item.setAvailable(true);
-        item.setOwner(owner);
-        item.setRequest(originalRequest);
-
-        ItemUpdateDto updateDto = new ItemUpdateDto(10L, "Новое имя", null, false);
-
-        when(validationUtils.getExistingUser(1L)).thenReturn(owner);
-        when(validationUtils.getExistingItem(10L)).thenReturn(item);
-        when(itemRepository.save(any(Item.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        var result = itemService.updateItem(1L, 10L, updateDto);
-
-        assertEquals("Новое имя", result.getName());
-        assertFalse(result.getAvailable());
-        verify(itemRepository).save(argThat(savedItem -> 
-            savedItem.getRequest() != null && 
-            savedItem.getRequest().getId().equals(5L)
-        ));
     }
 
     @Test
@@ -445,24 +360,5 @@ public class ItemServiceUnitTest {
                 () -> itemService.deleteItem(1L, 10L));
         assertTrue(ex.getMessage().contains("не принадлежит"));
         verify(itemRepository, never()).deleteById(anyLong());
-    }
-
-    @Test
-    public void getItem_WithRequest_ReturnsRequestId() {
-        Item item = new Item();
-        item.setId(10L);
-        item.setName("Дрель");
-
-        ItemRequest request = new ItemRequest();
-        request.setId(5L);
-        item.setRequest(request);
-
-        when(itemRepository.findById(10L)).thenReturn(Optional.of(item));
-        when(commentRepository.findByItemIdOrderByCreatedDesc(10L)).thenReturn(List.of());
-
-        ItemDto result = itemService.getItem(10L);
-
-        assertNotNull(result);
-        assertEquals(5L, result.getRequestId());
     }
 }

@@ -11,11 +11,7 @@ public class ItemMapper {
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
-        if (item.getRequest() != null) {
-            dto.setRequestId(item.getRequest().getId());
-        } else {
-            dto.setRequestId(null);
-        }
+        dto.setRequestId(item.getRequestId());
 
         return dto;
     }
@@ -26,6 +22,7 @@ public class ItemMapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
+        item.setRequestId(itemDto.getRequestId());
         return item;
     }
 

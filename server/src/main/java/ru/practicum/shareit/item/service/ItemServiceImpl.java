@@ -67,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> {
-                    log.warn("Вещь с id #{} не найдена", itemId);
+                    log.error("Вещь с id #{} не найдена", itemId);
                     return new NotFoundException("Вещь с таким id не найдена");
                 });
 
@@ -105,7 +105,7 @@ public class ItemServiceImpl implements ItemService {
         if (newItemDto.getRequestId() != null) {
             requestRepository.findById(newItemDto.getRequestId())
                     .orElseThrow(() -> {
-                        log.warn("Запрос с id #{} не найден", newItemDto.getRequestId());
+                        log.error("Запрос с id #{} не найден", newItemDto.getRequestId());
                         return new NotFoundException("Запрос с таким id не найден");
                     });
         }

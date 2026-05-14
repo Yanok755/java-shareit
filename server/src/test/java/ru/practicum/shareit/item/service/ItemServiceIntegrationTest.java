@@ -11,6 +11,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
@@ -60,6 +61,30 @@ public class ItemServiceIntegrationTest {
         assertNotNull(created.getId());
         assertEquals("Дрель", created.getName());
         assertEquals(request.getId(), created.getRequestId());
+
+        Item savedItem = itemRepository.findById(created.getId()).orElseThrow();
+        assertNotNull(savedItem.getRequest(), "Связь с Request должна быть установлена");
+        assertEquals(request.getId(), savedItem.getRequest().getId());
+        assertEquals(request.getId(), savedItem.getRequestId(), "Read-only поле requestId должно совпадать");
+    }
+
+    @Test
+    public void addItem_WithValidRequestId_RequestContainsItem() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+        UserDto requester = userService.addUser(new UserDto(null, "Requester", "req@test.com"));
+
+        var request = requestService.createRequest(requester.getId(),
+                new ItemRequestCreateDto("Нужна дрель"));
+
+        ItemDto newItem = new ItemDto(null, "Дрель", "Профессиональная", true, null, null, List.of(), request.getId());
+
+        ItemDto created = itemService.addItem(owner.getId(), newItem);
+
+        var foundRequest = requestService.getRequestById(requester.getId(), request.getId());
+        assertNotNull(foundRequest);
+        assertNotNull(foundRequest.getItems(), "Список items не должен быть null");
+        assertTrue(foundRequest.getItems().stream().anyMatch(i -> i.getId().equals(created.getId())),
+                "Item должен быть в списке items у Request");
     }
 
     @Test
@@ -69,6 +94,23 @@ public class ItemServiceIntegrationTest {
 
         assertThrows(NotFoundException.class, () ->
                 itemService.addItem(owner.getId(), newItem));
+    }
+
+    @Test
+    public void addItem_WithoutRequestId_Success() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+
+        ItemDto newItem = new ItemDto(null, "Дрель", "Профессиональная", true, null, null, List.of(), null);
+
+        ItemDto created = itemService.addItem(owner.getId(), newItem);
+
+        assertNotNull(created.getId());
+        assertEquals("Дрель", created.getName());
+        assertNull(created.getRequestId());
+
+        Item savedItem = itemRepository.findById(created.getId()).orElseThrow();
+        assertNull(savedItem.getRequest(), "Связь с Request не должна быть установлена");
+        assertNull(savedItem.getRequestId());
     }
 
     @Test
@@ -121,5 +163,85 @@ public class ItemServiceIntegrationTest {
         assertNotNull(found);
         assertEquals("Дрель", found.getName());
         assertNotNull(found.getComments());
+    }
+
+    @Test
+    public void getItemById_WithRequest_ReturnsRequestId() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+        UserDto requester = userService.addUser(new UserDto(null, "Requester", "req@test.com"));
+
+        var request = requestService.createRequest(requester.getId(),
+                new ItemRequestCreateDto("Нужна профессиональная дрель"));
+
+        ItemDto newItem = new ItemDto(null, "Дрель", "Профессиональная", true, null, null, List.of(), request.getId());
+        ItemDto created = itemService.addItem(owner.getId(), newItem);
+
+        ItemDto found = itemService.getItem(created.getId());
+
+        assertNotNull(found);
+        assertEquals(request.getId(), found.getRequestId(), "RequestId должен быть в DTO");
+    }
+
+    @Test
+    public void updateItem_ShouldNotChangeRequestId() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+        UserDto requester = userService.addUser(new UserDto(null, "Requester", "req@test.com"));
+
+        var request = requestService.createRequest(requester.getId(),
+                new ItemRequestCreateDto("Нужна дрель"));
+
+        ItemDto newItem = new ItemDto(null, "Дрель", "Старое описание", true, null, null, List.of(), request.getId());
+        ItemDto created = itemService.addItem(owner.getId(), newItem);
+
+        ru.practicum.shareit.item.dto.ItemUpdateDto updateDto = 
+                new ru.practicum.shareit.item.dto.ItemUpdateDto(created.getId(), null, "Новое описание", null);
+
+        ItemDto updated = itemService.updateItem(owner.getId(), created.getId(), updateDto);
+
+        assertEquals("Новое описание", updated.getDescription());
+        assertEquals(request.getId(), updated.getRequestId(), "RequestId не должен измениться при обновлении");
+
+        Item savedItem = itemRepository.findById(created.getId()).orElseThrow();
+        assertNotNull(savedItem.getRequest());
+        assertEquals(request.getId(), savedItem.getRequest().getId());
+    }
+
+    @Test
+    public void getItemsByRequestId_ShouldReturnAllItems() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+        UserDto requester = userService.addUser(new UserDto(null, "Requester", "req@test.com"));
+
+        var request = requestService.createRequest(requester.getId(),
+                new ItemRequestCreateDto("Нужны инструменты"));
+
+        ItemDto item1 = itemService.addItem(owner.getId(),
+                new ItemDto(null, "Дрель", "Профессиональная", true, null, null, List.of(), request.getId()));
+        ItemDto item2 = itemService.addItem(owner.getId(),
+                new ItemDto(null, "Шуруповерт", "Аккумуляторный", true, null, null, List.of(), request.getId()));
+
+        List<Item> items = itemRepository.findByRequestId(request.getId());
+
+        assertEquals(2, items.size());
+        assertTrue(items.stream().anyMatch(i -> i.getName().equals("Дрель")));
+        assertTrue(items.stream().anyMatch(i -> i.getName().equals("Шуруповерт")));
+    }
+
+    @Test
+    public void createItem_WithRequest_ThenGetRequest_ShouldContainItem() {
+        UserDto owner = userService.addUser(new UserDto(null, "Owner", "owner@test.com"));
+        UserDto requester = userService.addUser(new UserDto(null, "Requester", "req@test.com"));
+
+        var request = requestService.createRequest(requester.getId(),
+                new ItemRequestCreateDto("Нужна качественная дрель"));
+
+        ItemDto newItem = new ItemDto(null, "Makita", "Профессиональная дрель", true, null, null, List.of(), request.getId());
+        ItemDto created = itemService.addItem(owner.getId(), newItem);
+
+        var foundRequest = requestService.getRequestById(requester.getId(), request.getId());
+
+        assertNotNull(foundRequest.getItems());
+        assertEquals(1, foundRequest.getItems().size());
+        assertEquals(created.getId(), foundRequest.getItems().get(0).getId());
+        assertEquals(created.getName(), foundRequest.getItems().get(0).getName());
     }
 }

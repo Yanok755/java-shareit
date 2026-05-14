@@ -5,13 +5,21 @@ import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Item;
 
 public class ItemMapper {
+
     public static ItemDto toItemDto(Item item) {
         ItemDto dto = new ItemDto();
         dto.setId(item.getId());
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
-        dto.setRequestId(item.getRequestId());
+
+        if (item.getRequest() != null) {
+            dto.setRequestId(item.getRequest().getId());
+        } else if (item.getRequestId() != null) {
+            dto.setRequestId(item.getRequestId());
+        } else {
+            dto.setRequestId(null);
+        }
 
         return dto;
     }
@@ -22,7 +30,7 @@ public class ItemMapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
-        item.setRequestId(itemDto.getRequestId());
+
         return item;
     }
 

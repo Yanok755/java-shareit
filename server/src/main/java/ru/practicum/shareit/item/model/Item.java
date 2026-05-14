@@ -1,16 +1,14 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import ru.practicum.shareit.user.model.User;
 import lombok.*;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.request.model.Request;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = "owner")
+@ToString(exclude = {"owner", "request"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "items")
@@ -31,6 +29,7 @@ public class Item {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @Column(name = "request_id")
-    private Long requestId;
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private Request request;
 }
